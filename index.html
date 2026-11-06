@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Арена забытых теней</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="css/style.css"></head><body>
+<div id="st">
+<canvas id="cv"></canvas>
+<div id="hud">
+ <div class="hp" style="--c:#e23b3b"><b id="n1"></b><i><s id="l1"></s><u id="h1"></u></i></div>
+ <div id="mid"><span id="tm">60</span><span id="sc"></span><span id="light-state">Полумрак</span><div id="tb"><button data-a="pause">Пауза</button><button data-go="menu">Меню</button></div></div>
+ <div class="hp r" style="--c:#2f6bff"><b id="n2"></b><i><s id="l2"></s><u id="h2"></u></i></div>
+</div>
+<div id="vp"><button class="b" id="mc" data-a="mic">Микрофон: выкл</button><span id="vs">Микрофон выключен</span><b id="lc"></b></div>
+<div class="scr on" id="menu"><p class="eyebrow">МИР, СОТКАННЫЙ ИЗ ЗАБЫТЫХ СТРАХОВ</p><h1>АРЕНА<br>ЗАБЫТЫХ ТЕНЕЙ</h1><p>Выбери тень. Реши, кто вернётся в мир людей.</p><button class="b" data-go="modes">Начать игру</button><button class="b secondary" data-go="how">Как играть</button><button class="b secondary" data-go="set">Настройки</button></div>
+<div class="scr" id="modes"><p class="eyebrow">ВЫБЕРИ ИСПЫТАНИЕ</p><h2>Режим игры</h2><button class="b" data-go="stories">История</button><button class="b" data-m="ai">Игрок против ИИ</button><button class="b" data-m="pvp">Игрок против игрока</button><button class="b" data-m="voice">Голосовое управление</button><button class="b secondary" data-go="menu">Назад</button></div>
+<div class="scr" id="stories"><p class="eyebrow">У КАЖДОЙ ТЕНИ СВОЙ ПУТЬ</p><h2>Выбери историю</h2><div id="story-picks">
+ <article class="story-card"><span class="available">ДОСТУПНО</span><h3>Шаг сквозь прошлое</h3><p>Путь Сая: три боя, встреча со своим прошлым и возвращение в мир людей.</p><button class="b" data-story="sai">Играть историю</button></article>
+ <article class="story-card muted"><span>СКОРО</span><h3>История Лики</h3><p>Путь Маски пока закрыт.</p><button class="b" disabled>Скоро</button></article>
+ <article class="story-card muted"><span>СКОРО</span><h3>История Мора</h3><p>Путь Громилы пока закрыт.</p><button class="b" disabled>Скоро</button></article>
+ </div><button class="b secondary" data-go="modes">Назад</button></div>
+<div class="scr" id="select"><p class="eyebrow">АРЕНА ВЫБИРАЕТ СВОИХ БОЙЦОВ</p><h2>Выбери бойцов</h2><div id="fighter-picks">
+ <label class="pick"><span id="pick-label-1">ИГРОК 1</span><select id="pick-1"><option value="sai">Сай · Самурай-тень</option><option value="lika">Лика · Маска</option><option value="mor">Мор · Громила</option></select><p id="pick-desc-1"></p></label>
+ <label class="pick"><span id="pick-label-2">СОПЕРНИК</span><select id="pick-2"><option value="lika">Лика · Маска</option><option value="sai">Сай · Самурай-тень</option><option value="mor">Мор · Громила</option></select><p id="pick-desc-2"></p></label>
+ </div><button class="b" id="begin-fight">Войти на арену</button><button class="b secondary" data-go="modes">Назад</button></div>
+<div class="scr" id="story"><p class="eyebrow">ПУТЬ САЯ · СЮЖЕТНЫЙ РЕЖИМ</p><h2 id="story-heading">Шаг сквозь прошлое</h2><p id="story-copy"></p><button class="b" id="story-next" data-a="story-next">Начать историю</button><button class="b secondary" data-go="menu">В меню</button></div>
+<div class="scr" id="how"><h2>Как играть</h2>
+<p><b>Игрок 1:</b> ← → движение, ↑ прыжок, J удар, I удар ногой, K защита, L способность, ↓ уклонение.<br><b>Игрок 2:</b> A D движение, W прыжок, F удар, R нога, G защита, H способность, S уклонение.<br>Пауза: Esc или P. Побеждает тот, кто выиграет 2 раунда.</p>
+<p><b>Способности:</b> Сай прорывается сквозь тьму, Лика вызывает двойника, Мор бьёт по земле. Арена меняет свет: в полумраке способности сильнее, при ярком свете слабее. Голосовые команды: «удар», «удар ногой», «защита», «прыжок», «вперёд», «назад», «уклонение», «суперудар».</p>
+<p><b>История Сая:</b> три боя и короткие сцены о том, как он перестаёт бежать от прошлого.</p>
+<button class="b secondary" data-go="menu">Назад</button></div>
+<div class="scr" id="set"><p class="eyebrow">НАСТРОЙ АРЕНУ</p><h2>Настройки</h2><button class="b" id="snd" data-a="snd">Звук: вкл</button><button class="b" id="df" data-a="df">Сложность ИИ: средняя</button><button class="b secondary" data-go="menu">Назад</button></div>
+<div class="scr" id="pause"><h2>Пауза</h2><button class="b" data-a="resume">Продолжить</button><button class="b" data-a="restart">Заново</button><button class="b secondary" data-go="menu">В меню</button></div>
+<div class="scr" id="end"><p class="eyebrow">АРЕНА ВЫНЕСЛА РЕШЕНИЕ</p><h1 id="et"></h1><p id="es"></p><button class="b" data-a="restart">Снова на арену</button><button class="b secondary" data-go="menu">В меню</button></div>
+</div>
+<div id="pad"><div><button data-k="l">◀</button><button data-k="r">▶</button><button data-k="jump">Прыжок</button></div><div><button data-k="block">Блок</button><button data-k="punch">Удар</button><button data-k="kick">Нога</button><button data-k="special">Супер</button><button data-k="dodge">Уклон</button></div></div>
+<script src="js/physics.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/animations.js"></script>
+<script src="js/player.js"></script>
+<script src="js/enemy-ai.js"></script>
+<script src="js/game.js"></script>
+<script src="js/input.js"></script>
+<script src="js/voice-control.js"></script>
+<script src="js/main.js"></script>
+</body></html>

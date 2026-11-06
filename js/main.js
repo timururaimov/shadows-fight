@@ -1,0 +1,2 @@
+/* Точка входа */
+requestAnimationFrame(loop);

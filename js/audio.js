@@ -1,0 +1,4 @@
+/* Звуки: синтез через Web Audio (файлы не нужны) */
+/* ---------- audio ---------- */
+function tone(f,g,d,t='square',v=.12){if(!S.snd)return;try{AC=AC||new AudioContext();if(AC.state=='suspended')AC.resume();const o=AC.createOscillator(),a=AC.createGain(),n=AC.currentTime;o.type=t;o.frequency.setValueAtTime(f,n);o.frequency.exponentialRampToValueAtTime(Math.max(g,20),n+d);a.gain.setValueAtTime(v,n);a.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(a);a.connect(AC.destination);o.start(n);o.stop(n+d)}catch(e){}}
+const SFX={hit:()=>tone(220,60,.12,'sawtooth'),hurt:()=>tone(150,40,.2),jump:()=>tone(300,600,.15,'sine'),sp:()=>tone(200,900,.4,'sawtooth'),win:()=>{tone(400,800,.2,'triangle');setTimeout(()=>tone(600,1000,.3,'triangle'),180)},lose:()=>tone(300,60,.6,'triangle'),blk:()=>tone(500,300,.06,'square',.08),sw:()=>tone(400,200,.07,'sine',.06)};
