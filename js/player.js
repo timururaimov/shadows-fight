@@ -3,44 +3,65 @@
 const FIGHTERS={
  sai:{name:'Сай · Самурай-тень',short:'Сай',ability:'Шаг сквозь тьму',description:'Рывок сквозь тень с ударом клинком.',speed:255,accent:'#83d9ff'},
  lika:{name:'Лика · Маска',short:'Лика',ability:'Отголосок',description:'Теневой двойник повторяет последнюю атаку.',speed:225,accent:'#d5a4ff'},
- mor:{name:'Мор · Громила',short:'Мор',ability:'Гул бездны',description:'Удар по земле поражает врагов поблизости.',speed:185,accent:'#ff765d'}
+ mor:{name:'Мор · Громила',short:'Мор',ability:'Гул бездны',description:'Удар по земле поражает врагов поблизости.',speed:185,accent:'#ff765d'},
+ nera:{name:'Нэра · Хранительница искр',short:'Нэра',ability:'Искра памяти',description:'Пускает сквозь арену светящийся осколок.',speed:215,accent:'#70e5c8'}
+};
+const BOSS_MOVES={
+ sai:{name:'Рассечение тени',intro:'САЙ · РАССЕЧЕНИЕ ТЕНИ'},
+ lika:{name:'Зеркальный хор',intro:'ЛИКА · ЗЕРКАЛЬНЫЙ ХОР'},
+ mor:{name:'Разлом арены',intro:'МОР · РАЗЛОМ АРЕНЫ'}
 };
 const AT={punch:{d:.28,hs:.08,he:.2,dmg:6,reach:62,kb:200,cd:.3,sh:0},kick:{d:.46,hs:.16,he:.3,dmg:10,reach:80,kb:340,cd:.75,sh:5},special:{d:.72,hs:.28,dmg:18,reach:120,kb:460,cd:5,sh:8},hit:{d:.3},dodge:{d:.4}};
-const mk=(i,name,col,fighter='sai')=>({i,name,col,fighter,speed:FIGHTERS[fighter].speed,x:0,y:G,vx:0,vy:0,dir:1,hp:100,lag:100,act:null,cd:{punch:0,kick:0,special:0,dodge:0},inv:0,cb:0,cbT:0,blk:0,vm:0,vd:0,vb:0,wins:0,ai:0,aiT:0,aiB:0,rc:0,plan:'',t:0,lastMove:'punch',
+const mk=(i,name,col,fighter='sai')=>({i,name,col,fighter,speed:FIGHTERS[fighter].speed,maxHp:100,power:1,boss:0,x:0,y:G,vx:0,vy:0,dir:1,hp:100,lag:100,act:null,cd:{punch:0,kick:0,special:0,dodge:0},inv:0,cb:0,cbT:0,combo:0,comboTimer:0,comboBest:0,blk:0,vm:0,vd:0,vb:0,wins:0,ai:0,aiT:0,aiB:0,rc:0,plan:'',t:0,lastMove:'punch',
  inp:{l:0,r:0,block:0,jump:0,punch:0,kick:0,special:0,dodge:0},pose:new Array(10).fill(0),tg:new Array(10).fill(0)});
-function rst(f,i){f.x=i?W-220:220;f.y=G;f.vx=f.vy=0;f.dir=i?-1:1;f.hp=f.lag=100;f.act=null;f.inv=0;f.cb=0;f.cbT=0;f.vm=f.vb=0;f.aiB=0;f.plan='';for(const k in f.cd)f.cd[k]=0}
-function hurt(t,sx,dmg,kb,sh){
- if(t.inv>0||(t.act&&t.act.type=='dead')||gm.st!='fight')return;
+function rst(f,i){f.x=i?W-220:220;f.y=G;f.vx=f.vy=0;f.dir=i?-1:1;f.hp=f.lag=f.maxHp||100;f.act=null;f.inv=0;f.cb=0;f.cbT=0;f.combo=f.comboTimer=0;f.vm=f.vb=0;f.aiB=0;f.plan='';for(const k in f.cd)f.cd[k]=0;const badge=$('#combo'+(f.i+1));if(badge)badge.classList.remove('on')}
+function hurt(t,sx,dmg,kb,sh,sourceFighter=null){
+ if(t.inv>0||(t.act&&t.act.type=='dead')||gm.st!='fight')return 0;
  const bl=t.blk&&(sx-t.x)*t.dir>0,sg=t.x>=sx?1:-1;
  if(bl){dmg*=.2;kb*=.35;SFX.blk();gm.fx.x=t.x+t.dir*23;gm.fx.y=t.y-58;gm.fx.t=.18;gm.fx.kind='block';burst(t.x+t.dir*16,t.y-55,7,'#83d9ff')}
  else{t.act={type:'hit',t:0,d:.3,h:1,b:0};t.inv=.5;if(sh)gm.sh=sh;gm.fx.x=t.x;gm.fx.y=t.y-55;gm.fx.t=.18;gm.fx.kind='hit';SFX.hit();SFX.hurt();burst(t.x,t.y-55,sh>3?20:10,'#ffad78')}
- t.hp=Math.max(0,t.hp-dmg);t.vx=sg*kb;
+ t.hp=Math.max(0,t.hp-dmg);t.vx=sg*kb;if(sourceFighter&&!bl)noteComboHit(sourceFighter);
  if(t.hp<=0){t.act={type:'dead',t:0,d:1e9,h:1,b:0};t.vx=sg*260;t.vy=-300;endR()}
+ return 1
 }
-function atk(f,t){const d=AT[t];f.act={type:t,t:0,d:d.d,h:0,b:0};f.cd[t]=d.cd;
+function atk(f,t){if(!f.ai&&f.i==0)completeTutorialHint();const d=AT[t];f.act={type:t,t:0,d:d.d,h:0,b:0};f.cd[t]=d.cd;
  if(t=='punch'){f.cb=f.cbT>0?f.cb+1:1;if(f.cb>=3){f.act.b=5;f.cb=0;f.cd.punch=.6}f.cbT=.55}
  if(t=='punch'||t=='kick')f.lastMove=t;
  (t=='special'?SFX.sp:SFX.sw)();f.vx*=.3}
 function specialHit(f,o){
- const id=f.fighter,dir=f.dir,power=shadowPower();
+ const id=f.fighter,dir=f.dir,power=shadowPower()*f.power;
+ if(id=='nera'){
+  const color=f.accentOverride||FIGHTERS.nera.accent;PR.push({x:f.x+dir*34,y:f.y-66,vx:dir*620,l:1.35,o:f,damage:17*power,kb:390,color});burst(f.x+dir*28,f.y-66,12,color);return
+ }
+ if(f.boss&&id=='sai'){
+  const from=f.x,distance=Math.abs(o.x-f.x);burst(from,f.y-55,18,'#ffcf68');f.x=Math.max(40,Math.min(W-40,o.x-dir*48));burst(f.x,f.y-55,24,'#ffcf68');
+  if(distance<560&&Math.abs(o.y-f.y)<90)hurt(o,from,22*power,620,14,f);return
+ }
+ if(f.boss&&id=='lika'){
+  for(let k=0;k<2;k++)ECHOS.push({owner:f,target:o,x:f.x+dir*(20+k*12),y:f.y,dir,move:k?'kick':'punch',damage:(k?10:8)*power,delay:k?.58:.15,t:0,life:1.25,hit:0});return
+ }
+ if(f.boss&&id=='mor'){
+  BWAVES.push({owner:f,target:o,x:f.x+dir*20,y:G-5,dir,vx:dir*560,life:1.55,r:42,damage:20*power,kb:530,hit:0});burst(f.x,f.y-6,18,'#ffcf68');return
+ }
  if(id=='sai'){
   const distance=(o.x-f.x)*dir,advance=Math.max(0,Math.min(105,distance-48));
   f.x=Math.max(40,Math.min(W-40,f.x+dir*advance));
-  if(distance>-20&&distance<155&&Math.abs(o.y-f.y)<80)hurt(o,f.x,14*power,430,8);
+  if(distance>-20&&distance<155&&Math.abs(o.y-f.y)<80)hurt(o,f.x,14*power,430,8,f);
  }else if(id=='lika'){
   ECHOS.push({owner:f,target:o,x:f.x+dir*24,y:f.y,dir,move:f.lastMove,damage:(f.lastMove=='kick'?7:5)*power,delay:.35,t:0,life:.8,hit:0});
  }else{
   burst(f.x,f.y-8,20,FIGHTERS.mor.accent);
-  if(Math.abs(o.x-f.x)<145&&Math.abs(o.y-f.y)<85)hurt(o,f.x,18*power,470,8);
+  if(Math.abs(o.x-f.x)<145&&Math.abs(o.y-f.y)<85)hurt(o,f.x,18*power,470,8,f);
  }
 }
 function upd(f,o,dt){
  const I=f.inp,gr=f.y>=G,live=gm.st=='fight';let a=f.act;
  f.t+=dt;f.inv=Math.max(0,f.inv-dt);f.cbT-=dt;f.vb-=dt;
+ if(!updateComboTimer(f,dt)){const badge=$('#combo'+(f.i+1));if(badge)badge.classList.remove('on')}
  for(const k in f.cd)f.cd[k]=Math.max(0,f.cd[k]-dt);
  if(a){a.t+=dt;const d=AT[a.type];
   if(a.type=='special'&&!a.h&&a.t>=d.hs){a.h=1;specialHit(f,o)}
-  else if(d&&a.type!='special'&&d.dmg&&!a.h&&a.t>=d.hs&&a.t<=d.he){const dx=(o.x-f.x)*f.dir;if(dx>-12&&dx<d.reach&&Math.abs(o.y-f.y)<70){a.h=1;hurt(o,f.x,d.dmg+a.b,d.kb,d.sh)}}
+  else if(d&&a.type!='special'&&d.dmg&&!a.h&&a.t>=d.hs&&a.t<=d.he){const dx=(o.x-f.x)*f.dir;if(dx>-12&&dx<d.reach&&Math.abs(o.y-f.y)<70){a.h=1;hurt(o,f.x,(d.dmg+a.b)*f.power,d.kb,d.sh,f)}}
   if(a.t>=a.d)f.act=a=null}
  if(!a&&live){
   f.blk=(I.block||f.vb>0)&&gr?1:0;

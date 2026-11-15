@@ -8,7 +8,7 @@ function ai(f,o,dt){
  if(f.aiB>0){f.aiB-=dt;I.block=1;return}
  f.aiT-=dt;
  if(f.aiT<=0){f.aiT=.2+Math.random()*.4*(1.3-Sk);const r=Math.random();
-  f.plan=d>170?(r<.15&&!f.cd.special?'sp':r<.2?'jump':'go'):d>85?(r<.4?'go':r<.6?'kick':r<.7?'jump':'punch'):(r<.4?'punch':r<.6?'kick':r<.75?'back':r<.9?'blk':'punch')}
+  f.plan=f.boss&&!f.cd.special&&r<.27?'sp':chooseAIPlan(f.fighter,d,r,!f.cd.special)}
  const p=f.plan;
  if(p=='go'&&d>60)I[tw]=1;else if(p=='back')I[aw]=1;else if(p=='blk')I.block=1;
  else if(p=='sp'){I.special=1;f.plan=''}

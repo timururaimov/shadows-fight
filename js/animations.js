@@ -12,15 +12,17 @@ function tgt(f){const T=f.tg,a=f.act,ty=a&&a.type,t=f.t,gr=f.y>=G,sp=Math.abs(f.
  else{const b=Math.sin(t*3);v=[.1+.03*b,.6,2,.3,2.2,.25,-.5,-.2,-.3,.25+.05*b]}
  for(let i=0;i<10;i++)T[i]=v[i]}
 function drawF(f,ox=0,alpha=1){
- const id=f.fighter||'sai',P=f.pose,a=f.act,ty=a&&a.type,accent=f.accentOverride||FIGHTERS[id].accent;
+ const id=f.fighter||'sai',P=f.pose,a=f.act,ty=a&&a.type,accent=f.accentOverride||(f.boss?'#ffcf68':FIGHTERS[id].accent);
  c.save();c.globalAlpha=alpha*(ty=='dodge'?.42:f.inv>0&&ty!='hit'&&(f.t*25|0)%2?.55:1);
- c.translate(f.x+ox,f.y);if(ty=='dead')c.rotate(-f.dir*Math.min(1,a.t*2.5)*1.2);c.scale(f.dir,1);
+ c.translate(f.x+ox,f.y);if(ty=='dead')c.rotate(-f.dir*Math.min(1,a.t*2.5)*1.2);c.scale(f.dir*(f.boss?1.16:1),f.boss?1.16:1);
  c.lineJoin='round';c.lineCap='round';
  // Мягкий ореол отличает бойцов от тёмного фона.
- c.shadowColor=accent;c.shadowBlur=id=='mor'?8:13;
+ c.shadowColor=accent;c.shadowBlur=f.boss?24:id=='mor'?8:13;
  if(id=='sai')drawSai(f,P,accent);
  else if(id=='lika')drawLika(f,P,accent);
- else drawMor(f,P,accent);
+ else if(id=='mor')drawMor(f,P,accent);
+ else drawNera(f,P,accent);
+ if(f.boss){c.save();c.globalAlpha=.45;c.strokeStyle=accent;c.lineWidth=2;c.beginPath();c.ellipse(0,-52,38,57,0,0,Math.PI*2);c.stroke();c.restore()}
  drawCombatFX(f,ty,accent);
  c.shadowBlur=0;c.restore()
 }
@@ -75,4 +77,14 @@ function drawMor(f,p,a){
  // Светящиеся трещины на груди.
  c.strokeStyle=a;c.lineWidth=3;c.beginPath();c.moveTo(-2,-78);c.lineTo(4,-62);c.lineTo(-3,-51);c.lineTo(5,-40);c.moveTo(4,-62);c.lineTo(14,-68);c.stroke();
  c.fillStyle='#17141d';c.beginPath();c.ellipse(-20,-8,15,5,0,0,7);c.ellipse(22,-8,15,5,0,0,7);c.fill()
+}
+function drawNera(f,p,a){
+ const sway=Math.sin(f.t*2.5)*2;
+ // Узкий плащ с полосами света, похожими на трещины памяти.
+ c.fillStyle='#14262a';c.strokeStyle='#397c77';c.lineWidth=2;c.beginPath();c.moveTo(-18,-78);c.lineTo(17,-78);c.lineTo(24,-45);c.lineTo(17,-22);c.lineTo(31,-3);c.lineTo(8,-10);c.lineTo(0,-2);c.lineTo(-8,-11);c.lineTo(-30,-3);c.lineTo(-19,-28);c.lineTo(-26,-49);c.closePath();c.fill();c.stroke();
+ c.strokeStyle=a;c.lineWidth=2;c.beginPath();c.moveTo(-12,-68);c.lineTo(-8,-48);c.lineTo(-15,-30);c.moveTo(9,-67);c.lineTo(5,-49);c.lineTo(13,-31);c.stroke();
+ limb(-17,-70,p[1],25,12,'#183035');limb(17,-70,p[3],25,12,'#183035');limb(-8,-17,p[5]-.15,23,12,'#111d22');limb(8,-17,p[7]-.15,23,12,'#111d22');
+ // Капюшон и осколок, парящий над лбом.
+ c.fillStyle='#17272c';c.strokeStyle='#57978c';c.lineWidth=2;c.beginPath();c.moveTo(-16,-91);c.lineTo(-13,-108);c.lineTo(0,-117+sway);c.lineTo(14,-107);c.lineTo(16,-91);c.lineTo(11,-79);c.lineTo(-11,-79);c.closePath();c.fill();c.stroke();
+ c.fillStyle=a;c.shadowColor=a;c.shadowBlur=12;c.fillRect(-10,-96,6,3);c.fillRect(4,-96,6,3);c.beginPath();c.moveTo(0,-128+sway);c.lineTo(7,-120+sway);c.lineTo(0,-112+sway);c.lineTo(-7,-120+sway);c.closePath();c.fill();c.shadowBlur=0;
 }
